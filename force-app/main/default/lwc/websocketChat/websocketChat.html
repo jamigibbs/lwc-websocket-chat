@@ -1,6 +1,13 @@
 <template>
     <p>{timeString}</p>
-    <p>{message}</p>
+
+    <template if:true={message}>
+      <p class="slds-text-color_success">{message}</p>
+    </template>
+
+    <template if:true={error}>
+      <p class="slds-text-color_error">{error}</p>
+    </template>
 
     <template if:false={error}>
       <!-- <div lwc:dom="manual" class="messages"></div> -->

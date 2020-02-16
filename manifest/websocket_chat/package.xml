@@ -5,6 +5,10 @@
         <members>websocketChat</members>
     </types>
     <types>
+        <name>ApexClass</name>
+        <members>ChatController</members>
+    </types>
+    <types>
         <name>StaticResource</name>
         <members>socketiojs</members>
     </types>
