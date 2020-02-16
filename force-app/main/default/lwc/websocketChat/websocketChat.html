@@ -1,3 +1,15 @@
 <template>
-    {timeString}
+    <p>{timeString}</p>
+    <p>{message}</p>
+
+    <template if:false={error}>
+      <!-- <div lwc:dom="manual" class="messages"></div> -->
+      <ul>
+        <template for:each={messages.data} for:item="message">
+          <li key={message.Id}>{message.OwnerId} - {message.Content__c}</li>
+        </template>
+      </ul>
+    </template>
+
+    <lightning-input type="textarea" class="message-input" label="Enter some text"></lightning-input>
 </template>
