@@ -57,7 +57,27 @@ export default class WebsocketChat extends LightningElement {
       });
 
       socket.on('output', (data) => {
-        this.createMessage(data.message);
+        if (data) {
+          const fields = {};
+          fields[CONTENT_FIELD.fieldApiName] = data.message;
+          const messageInput = { apiName: MESSAGE_OBJECT.objectApiName, fields };
+          createRecord(messageInput)
+            .then(() => {
+                socket.emit('transmit')
+                return refreshApex(this.messages);
+            })
+            .catch(error => {
+              this.error = error;
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Error creating message',
+                        message: 'There was an error',
+                        variant: 'error',
+                    }),
+                );
+            });
+
+        }
       });
 
       textarea.addEventListener('keydown', (event) => {
@@ -78,40 +98,17 @@ export default class WebsocketChat extends LightningElement {
           textarea.value = '';
           this.message = data.message;
           this.error = '';
-        } else if (!data.succes) {
+        } else if (!data.success) {
           this.error = data.message;
           this.message = '';
         }
       })
 
+      socket.on('chatupdated', () => {
+        return refreshApex(this.messages);
+      });
+
     }
 
-  }
-
-  createMessage(content){
-    const fields = {};
-    fields[CONTENT_FIELD.fieldApiName] = content;
-    const messageInput = { apiName: MESSAGE_OBJECT.objectApiName, fields };
-    createRecord(messageInput)
-      .then(() => {
-          //this.accountId = account.id;
-          this.dispatchEvent(
-              new ShowToastEvent({
-                  title: 'Success',
-                  message: 'Message created',
-                  variant: 'success',
-              }),
-          );
-          return refreshApex(this.messages);
-      })
-      .catch(error => {
-          this.dispatchEvent(
-              new ShowToastEvent({
-                  title: 'Error creating message',
-                  message: error.body.message,
-                  variant: 'error',
-              }),
-          );
-      });
   }
 }
