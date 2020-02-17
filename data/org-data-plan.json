@@ -1,0 +1,10 @@
+[
+  {
+    "sobject": "Chat_Message__c",
+    "saveRefs": true,
+    "resolveRefs": true,
+    "files": [
+        "Chat_Message__cs.json"
+    ]
+  }
+]

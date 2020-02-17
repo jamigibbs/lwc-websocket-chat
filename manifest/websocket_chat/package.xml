@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
     <types>
+        <name>CustomObject</name>
+        <members>Chat_Message__c</members>
+    </types>
+    <types>
         <name>LightningComponentBundle</name>
         <members>websocketChat</members>
     </types>
@@ -11,6 +15,10 @@
     <types>
         <name>StaticResource</name>
         <members>socketiojs</members>
+    </types>
+    <types>
+        <name>CorsWhitelistOrigin</name>
+        <members>HTTPS_websocket_heroku_server</members>
     </types>
     <version>46.0</version>
 </Package>

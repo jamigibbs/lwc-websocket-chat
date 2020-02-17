@@ -1,0 +1,18 @@
+{
+  "records": [
+      {
+          "attributes": {
+              "type": "User",
+              "referenceId": "UserRef1"
+          },
+          "Name": "Michael Scott"
+      },
+      {
+          "attributes": {
+              "type": "User",
+              "referenceId": "UserRef2"
+          },
+          "Name": "Dwight Schrute"
+      }
+  ]
+}

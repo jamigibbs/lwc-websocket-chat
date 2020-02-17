@@ -1,0 +1,18 @@
+{
+  "records": [
+      {
+          "attributes": {
+              "type": "Chat_Message__c",
+              "referenceId": "Chat_Message__cRef1"
+          },
+          "Content__c": "Hello World!"
+      },
+      {
+        "attributes": {
+            "type": "Chat_Message__c",
+            "referenceId": "Chat_Message__cRef2"
+        },
+        "Content__c": "Hello to you too!"
+    }
+  ]
+}
