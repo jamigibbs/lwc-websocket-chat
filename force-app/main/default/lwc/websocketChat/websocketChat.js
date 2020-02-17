@@ -44,6 +44,10 @@ export default class WebsocketChat extends LightningElement {
     });
   }
 
+  logMessages(){
+    console.log('messages', this.messages);
+  }
+
   initSocketIo(){
     // eslint-disable-next-line no-undef
     const socket = io.connect('https://sf-chat-websocket-server.herokuapp.com/');
@@ -63,7 +67,7 @@ export default class WebsocketChat extends LightningElement {
           const messageInput = { apiName: MESSAGE_OBJECT.objectApiName, fields };
           createRecord(messageInput)
             .then(() => {
-                socket.emit('transmit')
+                socket.emit('transmit');
                 return refreshApex(this.messages);
             })
             .catch(error => {
@@ -86,6 +90,7 @@ export default class WebsocketChat extends LightningElement {
         }
 
         if (event.which === 13 && event.shiftKey == false) {
+          event.preventDefault();
           socket.emit('input', {
             name: this.userId,
             message: textarea.value
@@ -97,9 +102,17 @@ export default class WebsocketChat extends LightningElement {
         if (data.success) {
           textarea.value = '';
           this.message = data.message;
+          // eslint-disable-next-line @lwc/lwc/no-async-operation
+          setTimeout(() => {
+            this.message = '';
+          }, 1000)
           this.error = '';
         } else if (!data.success) {
           this.error = data.message;
+          // eslint-disable-next-line @lwc/lwc/no-async-operation
+          setTimeout(() => {
+            this.error = '';
+          }, 1000)
           this.message = '';
         }
       })

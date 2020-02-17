@@ -1,22 +1,54 @@
 <template>
-    <p>{timeString}</p>
 
-    <template if:true={message}>
-      <p class="slds-text-color_success">{message}</p>
-    </template>
+    <div class="slds-text-heading_large slds-text-align_center slds-p-around_medium">Team Chatroom</div>
 
     <template if:true={error}>
       <p class="slds-text-color_error">{error}</p>
     </template>
 
-    <template if:false={error}>
-      <!-- <div lwc:dom="manual" class="messages"></div> -->
-      <ul>
-        <template for:each={messages.data} for:item="message">
-          <li key={message.Id}>{message.OwnerId} - {message.Content__c}</li>
-        </template>
-      </ul>
+    <div class="slds-grid slds-border_top slds-border_bottom slds-border_left slds-border_right">
+      <div class="slds-col slds-size_3-of-12 slds-border_right chatroom__sidebar">
+          <div class="slds-text-title slds-text-align_center slds-p-top_medium">In Chatroom</div>
+      </div>
+      <div class="slds-col slds-size_9-of-12">
+        <div class="chatroom__container">
+          <div class="chatroom__messages">
+            <ul class="slds-p-around_medium">
+              <template for:each={messages.data} for:item="message">
+                <li key={message.Id} class="slds-m-bottom_small">
+                  <div class="slds-grid">
+                    <div class="slds-col slds-size_1-of-12">
+                      <div class="chatroom__avatar">SF</div>
+                    </div>
+                    <div class="slds-col slds-size_11-of-12 chatroom__content">
+                      <p class="chatroom__username">{message.CreatedBy.Name}</p>
+                      <p>{message.Content__c}</p>
+                    </div>
+                  </div>
+                </li>
+              </template>
+            </ul>
+          </div>
+        </div>
+        <!-- <lightning-input type="textarea" class="message-input" label="Enter some text"></lightning-input> -->
+        <form class="send-message-form slds-border_top">
+          <input type="text"  class="message-input" placeholder="Your message">
+          <button type="submit">Send</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="slds-grid slds-wrap">
+      <div class="slds-col slds-size_1-of-1">
+          <p class="slds-text-body_small slds-float_right">Connected to the websocket server {timeString}</p>
+      </div>
+      <div class="slds-col slds-size_1-of-1">
+          <lightning-button variant="base" label="log messages" title="log messages" onclick={logMessages} class="slds-m-left_x-small slds-float_right"></lightning-button>
+      </div>
+    </div>
+
+    <template if:true={message}>
+      <p class="slds-text-color_success">{message}</p>
     </template>
 
-    <lightning-input type="textarea" class="message-input" label="Enter some text"></lightning-input>
 </template>
