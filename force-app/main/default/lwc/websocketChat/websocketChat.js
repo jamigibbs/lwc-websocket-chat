@@ -1,4 +1,4 @@
-import { LightningElement, api, wire, track } from 'lwc';
+import { LightningElement, api, wire } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { loadScript } from 'lightning/platformResourceLoader';
 import { createRecord } from 'lightning/uiRecordApi';
@@ -16,11 +16,13 @@ export default class WebsocketChat extends LightningElement {
   @api error;
 
   _socketIoInitialized = false;
-  _content;
 
   @wire(getTodayMessages)
   messages
 
+  /**
+   * Loading the socket.io script.
+   */
   renderedCallback(){
     if (this._socketIoInitialized) {
       return;
@@ -44,79 +46,86 @@ export default class WebsocketChat extends LightningElement {
     });
   }
 
-  logMessages(){
-    console.log('messages', this.messages);
-  }
-
+  /**
+   * After socket.io has initialized, make our socket connection and register listeners. 
+   */
   initSocketIo(){
     // eslint-disable-next-line no-undef
     const socket = io.connect('https://sf-chat-websocket-server.herokuapp.com/');
-
-    const textarea = this.template.querySelector('.message-input');
+    const messageInput = this.template.querySelector('.message-input');
 
     if (socket !== undefined) {
 
+      /**
+       * Not necessary for functionality. It just demonstrates the socket connecting with the server.
+       */
       socket.on('time', (timeString) => {
         this.timeString = timeString;
       });
 
+      /**
+       * After the user hits enter, the input field text is sent to the wss server and back to us in the
+       * 'output' event.
+       * TODO: It might not be necessary to send this data to the wss server and back here just to update.
+       */
+      messageInput.addEventListener('keydown', (event) => {
+        if (event.which === 13 && event.shiftKey === false) {
+          event.preventDefault();
+          socket.emit('input', {
+            name: this.userId,
+            message: messageInput.value
+          })
+        }
+      });
+
+      /**
+       * After the input text has been submitted, this event routes back to us so that we can create 
+       * a new Chat_Message__c record. 
+       * TODO: It might not be necessary to send this data to the wss server and back here just to update.
+       */
       socket.on('output', (data) => {
         if (data) {
           const fields = {};
           fields[CONTENT_FIELD.fieldApiName] = data.message;
-          const messageInput = { apiName: MESSAGE_OBJECT.objectApiName, fields };
-          createRecord(messageInput)
+          const message = { apiName: MESSAGE_OBJECT.objectApiName, fields };
+
+          createRecord(message)
             .then(() => {
                 socket.emit('transmit');
                 return refreshApex(this.messages);
             })
             .catch(error => {
               this.error = error;
-                this.dispatchEvent(
-                    new ShowToastEvent({
-                        title: 'Error creating message',
-                        message: 'There was an error',
-                        variant: 'error',
-                    }),
-                );
+              this.dispatchEvent(
+                  new ShowToastEvent({
+                      title: 'Error creating message',
+                      message: 'There was an error creating your message',
+                      variant: 'error',
+                  }),
+              );
             });
-
         }
       });
 
-      textarea.addEventListener('keydown', (event) => {
-        if (!this.userId) {
-          this.userId = new Date().toTimeString();
-        }
-
-        if (event.which === 13 && event.shiftKey == false) {
-          event.preventDefault();
-          socket.emit('input', {
-            name: this.userId,
-            message: textarea.value
-          })
-        }
-      });
-
+      /**
+       * Setting various messages received back from the socket connection.
+       */
       socket.on('status', (data) => {
         if (data.success) {
-          textarea.value = '';
+          messageInput.value = '';
           this.message = data.message;
-          // eslint-disable-next-line @lwc/lwc/no-async-operation
-          setTimeout(() => {
-            this.message = '';
-          }, 1000)
+          this.messageResetDelay('message');
           this.error = '';
         } else if (!data.success) {
           this.error = data.message;
-          // eslint-disable-next-line @lwc/lwc/no-async-operation
-          setTimeout(() => {
-            this.error = '';
-          }, 1000)
+          this.messageResetDelay('error');
           this.message = '';
         }
       })
 
+      /**
+       * If we're told that a message was sent to the chatroom, refresh the stale messages data.
+       */
       socket.on('chatupdated', () => {
         return refreshApex(this.messages);
       });
@@ -124,4 +133,24 @@ export default class WebsocketChat extends LightningElement {
     }
 
   }
+
+  /**
+   * Utility function to remove any displayed message after 1 second.
+   * @param {Text} msgType - Maps to the component message attribute.
+   */
+  messageResetDelay(msgType){
+    // eslint-disable-next-line @lwc/lwc/no-async-operation
+    setTimeout(() => {
+      this[msgType] = '';
+    }, 1000)
+  }
+
+  /**
+   * Utility function to console.log the messages data.
+   */
+  logMessages(){
+    // eslint-disable-next-line no-console
+    console.log('messages', this.messages);
+  }
+
 }
