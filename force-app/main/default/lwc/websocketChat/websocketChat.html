@@ -12,8 +12,24 @@
       </div>
       <div class="slds-col slds-size_9-of-12">
         <div class="chatroom__container">
+
           <div class="chatroom__messages">
             <ul class="slds-p-around_medium">
+
+              <template if:false={isMessages}>
+                <div class="chatroom__no-messages slds-text-heading_small slds-text-align_center slds-p-top_large">No message yet for today</div>
+              </template>
+
+              <template if:true={isTyping}>
+                <div class="chatroom__typing-wrap">
+                  <div class="chatroom__typing">
+                    <div class="chatroom__typing-line"></div>
+                    <div class="chatroom__typing-line"></div>
+                    <div class="chatroom__typing-line"></div>
+                  </div>
+                </div>
+              </template>
+
               <template for:each={messages.data} for:item="message">
                 <li key={message.Id} class="slds-m-bottom_small">
                   <div class="slds-grid">
@@ -27,7 +43,9 @@
                   </div>
                 </li>
               </template>
+
             </ul>
+
           </div>
         </div>
         <!-- <lightning-input type="textarea" class="message-input" label="Enter some text"></lightning-input> -->

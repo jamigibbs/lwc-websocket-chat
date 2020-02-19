@@ -14,6 +14,7 @@ export default class WebsocketChat extends LightningElement {
   @api timeString;
   @api message;
   @api error;
+  @api isTyping = false;
 
   _socketIoInitialized = false;
 
@@ -66,9 +67,9 @@ export default class WebsocketChat extends LightningElement {
       /**
        * After the user hits enter, the input field text is sent to the wss server and back to us in the
        * 'output' event.
-       * TODO: It might not be necessary to send this data to the wss server and back here just to update.
        */
       messageInput.addEventListener('keydown', (event) => {
+        socket.emit('usertyping', { userId: this.userId });
         if (event.which === 13 && event.shiftKey === false) {
           event.preventDefault();
           socket.emit('input', {
@@ -79,9 +80,39 @@ export default class WebsocketChat extends LightningElement {
       });
 
       /**
+       * When the user has released typing, debounce relased and after 1 second mark the user as
+       * not typing at longer. 
+       * Used for displaying the typing indicator to the other connected users.
+       */
+      messageInput.addEventListener('keyup', this.debounce( () => {
+        socket.emit('usernottyping', { userId: this.userId });
+      }, 1000));
+
+      /**
+       * If we received an event indicating that a user is typing, display the typing indicator
+       * if it's not the current user.
+       * TODO: Handle more than just 2 users.
+       */
+      socket.on('istyping', (data) => {
+        if (data.userId !== this.userId) {
+          this.isTyping = true;
+        }
+      });
+
+      /**
+       * If we received an event indicating that a user has stopped typing, stop displaying the typing indicator
+       * if it's not the current user.
+       * TODO: Handle more than just 2 users.
+       */
+      socket.on('nottyping', (data) => {
+        if (data.userId !== this.userId) {
+          this.isTyping = false;
+        }
+      });
+
+      /**
        * After the input text has been submitted, this event routes back to us so that we can create 
        * a new Chat_Message__c record. 
-       * TODO: It might not be necessary to send this data to the wss server and back here just to update.
        */
       socket.on('output', (data) => {
         if (data) {
@@ -96,6 +127,7 @@ export default class WebsocketChat extends LightningElement {
             })
             .catch(error => {
               this.error = error;
+              console.log('error', error);
               this.dispatchEvent(
                   new ShowToastEvent({
                       title: 'Error creating message',
@@ -132,6 +164,20 @@ export default class WebsocketChat extends LightningElement {
 
     }
 
+  }
+
+  get isMessages(){
+    return this.messages.data.length > 0;
+  }
+
+  debounce(callback, wait){
+    let timeout;
+    return (...args) => {
+        const context = this;
+        clearTimeout(timeout);
+        // eslint-disable-next-line @lwc/lwc/no-async-operation
+        timeout = setTimeout(() => callback.apply(context, args), wait);
+    };
   }
 
   /**

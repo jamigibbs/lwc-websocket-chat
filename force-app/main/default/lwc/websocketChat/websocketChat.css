@@ -10,14 +10,21 @@
   height: 400px;
   overflow: auto;
   -webkit-transform: rotate(180deg);
-          transform: rotate(180deg);
+  transform: rotate(180deg);
   direction: rtl;
+}
+
+.chatroom__no-messages {
+  color: #bbbbbb;
+  direction: ltr;
+  -webkit-transform: rotate(180deg);
+  transform: rotate(180deg);
 }
 
 .chatroom__messages li {
   -webkit-transform: rotate(180deg);
   transform: rotate(180deg);
-direction: ltr;
+  direction: ltr;
 }
 
 .chatroom__content {
@@ -49,4 +56,28 @@ direction: ltr;
 
 .send-message-form button {
   display: none;
+}
+
+.chatroom__typing-wrap {
+  text-align: center;
+}
+
+.chatroom__typing-wrap:last-child {margin-right: 0;}
+
+.chatroom__typing-line {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  border-radius: 15px;
+  background-color: #4b9cdb;
+}
+
+.chatroom__typing .chatroom__typing-line:nth-last-child(1) {animation: loadingC .6s .1s linear infinite;}
+.chatroom__typing .chatroom__typing-line:nth-last-child(2) {animation: loadingC .6s .2s linear infinite;}
+.chatroom__typing .chatroom__typing-line:nth-last-child(3) {animation: loadingC .6s .3s linear infinite;}
+
+@keyframes loadingC {
+  0 {transform: translate(0,0);}
+  50% {transform: translate(0,15px);}
+  100% {transform: translate(0,0);}
 }
