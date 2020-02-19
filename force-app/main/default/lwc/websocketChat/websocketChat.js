@@ -15,6 +15,7 @@ export default class WebsocketChat extends LightningElement {
   @api message;
   @api error;
   @api isTyping = false;
+  @api chatUsers = [{id: 1234, name: 'Michael Scott'}, {id: 12345, name: 'Dwight Schrute'}]
 
   _socketIoInitialized = false;
 

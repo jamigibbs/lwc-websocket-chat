@@ -8,15 +8,28 @@
 
     <div class="slds-grid slds-border_top slds-border_bottom slds-border_left slds-border_right">
       <div class="slds-col slds-size_3-of-12 slds-border_right chatroom__sidebar">
-          <div class="slds-text-title_caps slds-p-top_medium slds-p-left_medium">In Chatroom</div>
+          <div class="slds-text-title_caps slds-p-top_medium slds-p-left_medium">In Chatroom (mockup)</div>
+          <ul>
+            <template for:each={chatUsers} for:item="user">
+              <li key={user.id} class="slds-m-around_small">
+                <div class="slds-grid">
+                  <div class="slds-col slds-size_2-of-12">
+                    <div class="chatroom__avatar chatroom__avatar--small">SF</div>
+                  </div>
+                  <div class="slds-col slds-size_10-of-12 chatroom__content chatroom__usernames">
+                    <p class="chatroom__username">{user.name}</p>
+                  </div>
+                </div>
+              </li>
+            </template>
+          </ul>
       </div>
       <div class="slds-col slds-size_9-of-12">
         <div class="chatroom__container">
 
           <div class="chatroom__messages">
-            <ul class="slds-p-around_medium">
 
-              <template if:false={isMessages}>
+            <template if:false={isMessages}>
                 <div class="chatroom__no-messages slds-text-heading_small slds-text-align_center slds-p-top_large">No message yet for today</div>
               </template>
 
@@ -29,7 +42,9 @@
                   </div>
                 </div>
               </template>
+  
 
+            <ul class="slds-p-around_medium">
               <template for:each={messages.data} for:item="message">
                 <li key={message.Id} class="slds-m-bottom_small">
                   <div class="slds-grid">
@@ -43,7 +58,6 @@
                   </div>
                 </li>
               </template>
-
             </ul>
 
           </div>
