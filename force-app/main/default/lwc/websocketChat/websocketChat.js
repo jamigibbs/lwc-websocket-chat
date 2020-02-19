@@ -71,6 +71,10 @@ export default class WebsocketChat extends LightningElement {
        */
       messageInput.addEventListener('keydown', (event) => {
         socket.emit('usertyping', { userId: this.userId });
+        // Tab key for when input field is put into focus.
+        if (event.keyCode !== 9) {
+          socket.emit('usertyping', { userId: this.userId });
+        }
         if (event.which === 13 && event.shiftKey === false) {
           event.preventDefault();
           socket.emit('input', {
@@ -85,7 +89,7 @@ export default class WebsocketChat extends LightningElement {
        * not typing at longer. 
        * Used for displaying the typing indicator to the other connected users.
        */
-      messageInput.addEventListener('keyup', this.debounce( () => {
+      messageInput.addEventListener('keyup', this.debounce( (event) => {
         socket.emit('usernottyping', { userId: this.userId });
       }, 1000));
 
