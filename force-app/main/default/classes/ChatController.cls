@@ -5,7 +5,7 @@ public with sharing class ChatController {
         List<Chat_Message__c> messageList;
         try {
             messageList = [
-                SELECT Id, Content__c, CreatedBy.Name
+                SELECT Id, Content__c, CreatedDate, CreatedBy.Name
                 FROM Chat_Message__c 
                 WHERE CreatedDate = today 
                 ORDER BY CreatedDate DESC
@@ -16,5 +16,5 @@ public with sharing class ChatController {
         }
         return messageList;
     }
-    
+
 }

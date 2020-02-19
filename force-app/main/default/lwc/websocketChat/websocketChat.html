@@ -52,7 +52,9 @@
                       <div class="chatroom__avatar">SF</div>
                     </div>
                     <div class="slds-col slds-size_11-of-12 chatroom__content">
-                      <p class="chatroom__username">{message.CreatedBy.Name}</p>
+                      <p class="chatroom__username">{message.CreatedBy.Name} 
+                        <span class="chatroom__message-time slds-p-left_small">{message.CreatedDate}</span>
+                      </p>
                       <p>{message.Content__c}</p>
                     </div>
                   </div>

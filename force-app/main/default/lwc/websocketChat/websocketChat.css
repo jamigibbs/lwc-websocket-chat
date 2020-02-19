@@ -27,6 +27,12 @@
   direction: ltr;
 }
 
+.chatroom__message-time {
+  color: #cccccc;
+  font-size: 11px;
+  font-weight: normal;
+}
+
 .chatroom__content {
   line-height: 1.7;
   text-align: left;
