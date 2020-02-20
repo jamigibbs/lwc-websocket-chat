@@ -27,6 +27,12 @@
   direction: ltr;
 }
 
+.chatroom__messages li:hover {
+  background-color: #fafafa;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
 .chatroom__message-time {
   color: #cccccc;
   font-size: 11px;
