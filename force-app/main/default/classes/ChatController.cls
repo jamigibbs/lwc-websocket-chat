@@ -2,10 +2,11 @@ public with sharing class ChatController {
 
     @AuraEnabled(cacheable=true)
     public static List<Chat_Message__c> getTodayMessages() {
+        
         List<Chat_Message__c> messageList;
         try {
             messageList = [
-                SELECT Id, Content__c, CreatedDate, CreatedBy.Name
+                SELECT Id, Content__c, CreatedDate, CreatedBy.Name, CreatedBy.MediumPhotoUrl
                 FROM Chat_Message__c 
                 WHERE CreatedDate = today 
                 ORDER BY CreatedDate DESC
@@ -16,5 +17,5 @@ public with sharing class ChatController {
         }
         return messageList;
     }
-
+    
 }

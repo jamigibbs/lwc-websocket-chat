@@ -74,6 +74,10 @@
   padding: 10px;
 }
 
+.send-message-form input::placeholder {
+  color: #bbbbbb;
+}
+
 .send-message-form button {
   display: none;
 }
