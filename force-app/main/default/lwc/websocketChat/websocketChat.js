@@ -172,7 +172,10 @@ export default class WebsocketChat extends LightningElement {
   }
 
   get isMessages(){
-    return this.messages.data.length > 0;
+    if (this.messages.data) {
+      return this.messages.data.length > 0;
+    }
+    return false;
   }
 
   debounce(callback, wait){
