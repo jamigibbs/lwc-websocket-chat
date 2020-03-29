@@ -5,8 +5,12 @@
         <members>Chat_Message__c</members>
     </types>
     <types>
-        <name>LightningComponentBundle</name>
-        <members>websocketChat</members>
+        <name>Labels</name>
+        <members>Chat_Message__c</members>
+    </types>
+    <types>
+        <name>CustomLabels</name>
+        <members>websocket_server_url</members>
     </types>
     <types>
         <name>ApexClass</name>
@@ -17,8 +21,9 @@
         <members>socketiojs</members>
     </types>
     <types>
-        <name>CorsWhitelistOrigin</name>
-        <members>HTTPS_websocket_heroku_server</members>
+        <name>CspTrustedSite</name>
+        <members>HTTP_Websocket_Server</members>
+        <members>WSS_Websocket_Server</members>
     </types>
     <version>46.0</version>
 </Package>

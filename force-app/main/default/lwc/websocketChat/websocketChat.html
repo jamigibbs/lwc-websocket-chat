@@ -80,7 +80,9 @@
     </div>
 
     <template if:true={isChatActive}>
-      <lightning-button class="slds-m-top_medium" label="Leave Chat" title="Leave Chat" onclick={handleLeaveChat}></lightning-button>
+      <div class="slds-m-top_medium">
+        <lightning-button label="Leave Chat" title="Leave Chat" onclick={handleLeaveChat}></lightning-button>
+      </div>
     </template>
 
     <div class="slds-grid slds-wrap">

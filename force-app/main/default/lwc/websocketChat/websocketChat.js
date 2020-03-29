@@ -3,6 +3,7 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { loadScript } from 'lightning/platformResourceLoader';
 import { getRecord, createRecord } from 'lightning/uiRecordApi';
 import { refreshApex } from '@salesforce/apex';
+import WEBSOCKET_SERVER_URL from '@salesforce/label/c.websocket_server_url';
 import MESSAGE_OBJECT from '@salesforce/schema/Chat_Message__c';
 import CONTENT_FIELD from '@salesforce/schema/Chat_Message__c.Content__c';
 import USER_FIELD from '@salesforce/schema/Chat_Message__c.User__c';
@@ -70,7 +71,7 @@ export default class WebsocketChat extends LightningElement {
    */
   initSocketIo(){
     // eslint-disable-next-line no-undef
-    const socket = io.connect('https://sf-chat-websocket-server.herokuapp.com/');
+    const socket = io.connect(WEBSOCKET_SERVER_URL);
     const messageInput = this.template.querySelector('.message-input');
 
     if (socket !== undefined) {

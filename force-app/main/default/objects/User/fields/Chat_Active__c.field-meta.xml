@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Chat_Active__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Indicates if the user has entered the websocket chat room.</description>
+    <externalId>false</externalId>
+    <label>Chat Active</label>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Checkbox</type>
+</CustomField>
