@@ -6,17 +6,17 @@
 
     <div class="slds-grid slds-border_top slds-border_bottom slds-border_left slds-border_right">
       <div class="slds-col slds-size_3-of-12 slds-border_right chatroom__sidebar">
-        <template if:true={isChatActive}>
-          <div class="slds-text-title_caps slds-p-top_medium slds-p-left_medium">In Chatroom (mockup)</div>
+        <template if:true={displayChatUserList}>
+          <div class="slds-text-title_caps slds-p-top_medium slds-p-left_medium">In Chatroom</div>
           <ul>
-            <template for:each={chatUsers} for:item="user">
-              <li key={user.id} class="slds-m-around_small">
+            <template for:each={wiredChatUsers.data} for:item="user">
+              <li key={user.Id} class="slds-m-around_small">
                 <div class="slds-grid">
                   <div class="slds-col slds-size_2-of-12">
-                    <div class="chatroom__avatar chatroom__avatar--small">SF</div>
+                    <img src={user.MediumPhotoUrl} class="chatroom__avatar chatroom__avatar--small" />
                   </div>
                   <div class="slds-col slds-size_10-of-12 chatroom__content chatroom__usernames">
-                    <p class="chatroom__username">{user.name}</p>
+                    <p class="chatroom__username">{user.Name}</p>
                   </div>
                 </div>
               </li>
@@ -44,19 +44,19 @@
             </template>
   
             <ul class="slds-p-around_medium">
-              <template if:true={isChatActive} for:each={messages.data} for:item="message">
+              <template if:true={isChatActive} for:each={wiredMessages.data} for:item="message">
                 <li key={message.Id} class="slds-m-bottom_small">
                   <div class="slds-grid">
                     <div class="slds-col slds-size_1-of-12">
-                      <template if:true={message.CreatedBy.MediumPhotoUrl}>
-                        <img class="chatroom__avatar" src={message.CreatedBy.MediumPhotoUrl} />
+                      <template if:true={message.User__r.MediumPhotoUrl}>
+                        <img class="chatroom__avatar" src={message.User__r.MediumPhotoUrl} />
                       </template>
-                      <template if:false={message.CreatedBy.MediumPhotoUrl}>
+                      <template if:false={message.User__r.MediumPhotoUrl}>
                         <div class="chatroom__avatar">SF</div>
                       </template>
                     </div>
                     <div class="slds-col slds-size_11-of-12 chatroom__content">
-                      <p class="chatroom__username">{message.CreatedBy.Name} 
+                      <p class="chatroom__username">{message.User__r.Name} 
                         <span class="chatroom__message-time slds-p-left_small">{message.CreatedDate}</span>
                       </p>
                       <p>{message.Content__c}</p>

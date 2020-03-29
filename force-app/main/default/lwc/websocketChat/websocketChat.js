@@ -5,10 +5,12 @@ import { getRecord, createRecord } from 'lightning/uiRecordApi';
 import { refreshApex } from '@salesforce/apex';
 import MESSAGE_OBJECT from '@salesforce/schema/Chat_Message__c';
 import CONTENT_FIELD from '@salesforce/schema/Chat_Message__c.Content__c';
+import USER_FIELD from '@salesforce/schema/Chat_Message__c.User__c';
 import SOCKET_IO_JS from '@salesforce/resourceUrl/socketiojs';
 import USER_ID from '@salesforce/user/Id';
 import CHAT_ACTIVE_FIELD from '@salesforce/schema/User.Chat_Active__c';
 import getTodayMessages from '@salesforce/apex/ChatController.getTodayMessages';
+import getActiveChatUsers from '@salesforce/apex/ChatController.getActiveChatUsers';
 import setUserChatActive from '@salesforce/apex/ChatController.setUserChatActive';
 import setUserChatInactive from '@salesforce/apex/ChatController.setUserChatInactive';
 
@@ -19,7 +21,6 @@ export default class WebsocketChat extends LightningElement {
   @api error;
   @api isChatActive = false;
   @api isTyping = false;
-  @api chatUsers = [{id: 1234, name: 'Michael Scott'}, {id: 12345, name: 'Dwight Schrute'}]
 
   _socketIoInitialized = false;
 
@@ -33,7 +34,10 @@ export default class WebsocketChat extends LightningElement {
   }
 
   @wire(getTodayMessages)
-  messages
+  wiredMessages
+  
+  @wire(getActiveChatUsers)
+  wiredChatUsers
 
   /**
    * Loading the socket.io script.
@@ -136,6 +140,7 @@ export default class WebsocketChat extends LightningElement {
         if (data) {
           const fields = {};
           fields[CONTENT_FIELD.fieldApiName] = data.message;
+          fields[USER_FIELD.fieldApiName] = this.userId;
           const message = { apiName: MESSAGE_OBJECT.objectApiName, fields };
 
           createRecord(message)
@@ -185,8 +190,8 @@ export default class WebsocketChat extends LightningElement {
   }
 
   get isMessages(){
-    if (this.messages.data) {
-      return this.messages.data.length > 0;
+    if (this.wiredMessages.data) {
+      return this.wiredMessages.data.length > 0;
     }
     return false;
   }
@@ -196,13 +201,18 @@ export default class WebsocketChat extends LightningElement {
   }
 
   get inputPlaceholderText(){
-    return this.isInputDisabled ? 'Enter chat to being' : 'Type your message';
+    return this.isInputDisabled ? 'Enter chat' : 'Type your message and press enter';
+  }
+
+  get displayChatUserList() {
+    return this.isChatActive && this.wiredChatUsers;
   }
 
   handleEnterChat() {
     setUserChatActive()
       .then((res) => {
         this.isChatActive = res.Chat_Active__c;
+        return refreshApex(this.wiredChatUsers);
       })
       .catch(error => {
         console.error('error', error)
@@ -220,6 +230,7 @@ export default class WebsocketChat extends LightningElement {
     setUserChatInactive()
       .then((res) => {
         this.isChatActive = res.Chat_Active__c;
+        return refreshApex(this.wiredChatUsers);
       })
       .catch(error => {
         console.error('error', error)
@@ -259,7 +270,7 @@ export default class WebsocketChat extends LightningElement {
    */
   logMessages(){
     // eslint-disable-next-line no-console
-    console.log('messages', this.messages);
+    console.log('messages', this.wiredMessages.data);
   }
 
 }

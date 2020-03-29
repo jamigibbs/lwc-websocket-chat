@@ -6,9 +6,9 @@ public with sharing class ChatController {
         List<Chat_Message__c> messageList;
         try {
             messageList = [
-                SELECT Id, Content__c, CreatedDate, CreatedBy.Name, CreatedBy.MediumPhotoUrl
+                SELECT Id, Content__c, CreatedDate, User__r.Name, User__r.MediumPhotoUrl
                 FROM Chat_Message__c 
-                WHERE CreatedDate = today 
+                WHERE CreatedDate = today
                 ORDER BY CreatedDate DESC
             ];
         } catch(Exception e) {
@@ -16,6 +16,23 @@ public with sharing class ChatController {
             return null;
         }
         return messageList;
+    }
+
+    @AuraEnabled(cacheable=true)
+    public static List<User> getActiveChatUsers() {
+        
+        List<User> userList;
+        try {
+            userList = [
+                SELECT Id, CreatedDate, Name, MediumPhotoUrl
+                FROM User 
+                WHERE Chat_Active__c = true
+            ];
+        } catch(Exception e) {
+            System.debug(e.getMessage());
+            return null;
+        }
+        return userList;
     }
 
     @AuraEnabled
