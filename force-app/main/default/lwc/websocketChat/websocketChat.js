@@ -146,7 +146,7 @@ export default class WebsocketChat extends LightningElement {
           createRecord(message)
             .then(() => {
                 socket.emit('transmit');
-                return refreshApex(this.messages);
+                return refreshApex(this.wiredMessages);
             })
             .catch(error => {
               this.error = error;
@@ -182,7 +182,7 @@ export default class WebsocketChat extends LightningElement {
        * If we're told that a message was sent to the chatroom, refresh the stale messages data.
        */
       socket.on('chatupdated', () => {
-        return refreshApex(this.messages);
+        return refreshApex(this.wiredMessages);
       });
 
     }
