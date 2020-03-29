@@ -17,5 +17,41 @@ public with sharing class ChatController {
         }
         return messageList;
     }
+
+    @AuraEnabled
+    public static User setUserChatActive() {
+        User userToUpdate;
+        try {
+            userToUpdate = [
+                SELECT Id 
+                FROM User 
+                WHERE Id = :UserInfo.getUserId()
+            ];
+
+            userToUpdate.Chat_Active__c = true;
+            update userToUpdate;
+        } catch(DmlException e) {
+            System.debug('An unexpected error has occurred: ' + e.getMessage());
+        }
+        return userToUpdate;
+    }
+
+    @AuraEnabled
+    public static User setUserChatInactive() {
+        User userToUpdate;
+        try {
+            userToUpdate = [
+                SELECT Id 
+                FROM User 
+                WHERE Id = :UserInfo.getUserId()
+            ];
+
+            userToUpdate.Chat_Active__c = false;
+            update userToUpdate;
+        } catch(DmlException e) {
+            System.debug('An unexpected error has occurred: ' + e.getMessage());
+        }
+        return userToUpdate;
+    }
     
 }

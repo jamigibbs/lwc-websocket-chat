@@ -1,13 +1,12 @@
 <template>
 
-    <div class="slds-text-heading_large slds-text-align_center slds-p-around_medium">Team Chatroom</div>
-
     <template if:true={error}>
       <p class="slds-text-color_error">{error}</p>
     </template>
 
     <div class="slds-grid slds-border_top slds-border_bottom slds-border_left slds-border_right">
       <div class="slds-col slds-size_3-of-12 slds-border_right chatroom__sidebar">
+        <template if:true={isChatActive}>
           <div class="slds-text-title_caps slds-p-top_medium slds-p-left_medium">In Chatroom (mockup)</div>
           <ul>
             <template for:each={chatUsers} for:item="user">
@@ -23,6 +22,7 @@
               </li>
             </template>
           </ul>
+        </template>
       </div>
       <div class="slds-col slds-size_9-of-12">
         <div class="chatroom__container">
@@ -44,7 +44,7 @@
             </template>
   
             <ul class="slds-p-around_medium">
-              <template for:each={messages.data} for:item="message">
+              <template if:true={isChatActive} for:each={messages.data} for:item="message">
                 <li key={message.Id} class="slds-m-bottom_small">
                   <div class="slds-grid">
                     <div class="slds-col slds-size_1-of-12">
@@ -66,15 +66,22 @@
               </template>
             </ul>
 
+            <template if:false={isChatActive}>
+              <lightning-button class="chatroom__enter-button" label="Enter Chat" title="Enter Chat" onclick={handleEnterChat}></lightning-button>
+            </template>
+
           </div>
         </div>
-        <!-- <lightning-input type="textarea" class="message-input" label="Enter some text"></lightning-input> -->
         <form class="send-message-form slds-border_top">
-          <input type="text"  class="message-input" placeholder="Your message">
+          <input type="text" class="message-input" placeholder={inputPlaceholderText} disabled={isInputDisabled}>
           <button type="submit">Send</button>
         </form>
       </div>
     </div>
+
+    <template if:true={isChatActive}>
+      <lightning-button class="slds-m-top_medium" label="Leave Chat" title="Leave Chat" onclick={handleLeaveChat}></lightning-button>
+    </template>
 
     <div class="slds-grid slds-wrap">
       <div class="slds-col slds-size_1-of-1">
@@ -88,5 +95,4 @@
     <template if:true={message}>
       <p class="slds-text-color_success">{message}</p>
     </template>
-
 </template>

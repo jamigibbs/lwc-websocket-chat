@@ -1,23 +1,36 @@
 import { LightningElement, api, wire } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { loadScript } from 'lightning/platformResourceLoader';
-import { createRecord } from 'lightning/uiRecordApi';
+import { getRecord, createRecord } from 'lightning/uiRecordApi';
 import { refreshApex } from '@salesforce/apex';
 import MESSAGE_OBJECT from '@salesforce/schema/Chat_Message__c';
 import CONTENT_FIELD from '@salesforce/schema/Chat_Message__c.Content__c';
 import SOCKET_IO_JS from '@salesforce/resourceUrl/socketiojs';
-import Id from '@salesforce/user/Id';
+import USER_ID from '@salesforce/user/Id';
+import CHAT_ACTIVE_FIELD from '@salesforce/schema/User.Chat_Active__c';
 import getTodayMessages from '@salesforce/apex/ChatController.getTodayMessages';
+import setUserChatActive from '@salesforce/apex/ChatController.setUserChatActive';
+import setUserChatInactive from '@salesforce/apex/ChatController.setUserChatInactive';
 
 export default class WebsocketChat extends LightningElement {
-  @api userId = Id;
+  @api userId = USER_ID;
   @api timeString;
   @api message;
   @api error;
+  @api isChatActive = false;
   @api isTyping = false;
   @api chatUsers = [{id: 1234, name: 'Michael Scott'}, {id: 12345, name: 'Dwight Schrute'}]
 
   _socketIoInitialized = false;
+
+  @wire(getRecord, {recordId: USER_ID, fields: [CHAT_ACTIVE_FIELD]})
+  wiredUser({error, data}) {
+    if (error) {
+      this.error = error;
+    } else if (data) {
+      this.isChatActive = data.fields.Chat_Active__c.value;
+    }
+  }
 
   @wire(getTodayMessages)
   messages
@@ -176,6 +189,48 @@ export default class WebsocketChat extends LightningElement {
       return this.messages.data.length > 0;
     }
     return false;
+  }
+
+  get isInputDisabled(){
+    return this.isChatActive ? false : true;
+  }
+
+  get inputPlaceholderText(){
+    return this.isInputDisabled ? 'Enter chat to being' : 'Type your message';
+  }
+
+  handleEnterChat() {
+    setUserChatActive()
+      .then((res) => {
+        this.isChatActive = res.Chat_Active__c;
+      })
+      .catch(error => {
+        console.error('error', error)
+        this.dispatchEvent(
+            new ShowToastEvent({
+                title: 'Error updating user record',
+                message: 'There was an error entering the chat',
+                variant: 'error',
+            }),
+        );
+      });
+  }
+
+  handleLeaveChat(){
+    setUserChatInactive()
+      .then((res) => {
+        this.isChatActive = res.Chat_Active__c;
+      })
+      .catch(error => {
+        console.error('error', error)
+        this.dispatchEvent(
+            new ShowToastEvent({
+                title: 'Error updating user record',
+                message: 'There was an error leaving the chat',
+                variant: 'error',
+            }),
+        );
+      });
   }
 
   debounce(callback, wait){
