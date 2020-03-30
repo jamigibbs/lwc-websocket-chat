@@ -8,11 +8,11 @@
 
 .chatroom__messages {
   background-color: white;
+  direction: rtl;
   height: 400px;
   overflow: auto;
   -webkit-transform: rotate(180deg);
   transform: rotate(180deg);
-  direction: rtl;
 }
 
 .chatroom__enter-button {
@@ -24,17 +24,10 @@
   transform: rotate(180deg);
 }
 
-.chatroom__no-messages {
-  color: #bbbbbb;
-  direction: ltr;
-  -webkit-transform: rotate(180deg);
-  transform: rotate(180deg);
-}
-
 .chatroom__messages li {
+  direction: ltr;
   -webkit-transform: rotate(180deg);
   transform: rotate(180deg);
-  direction: ltr;
 }
 
 .chatroom__messages li:hover {
@@ -51,6 +44,7 @@
 
 .chatroom__content {
   line-height: 1.7;
+  margin-left: 10px;
   text-align: left;
 }
 
@@ -84,10 +78,10 @@
 }
 
 .send-message-form input {
-  width: 100%;
   border: none;
   font-size: 16px;
   padding: 10px;
+  width: 100%;
 }
 
 .send-message-form input::placeholder {
@@ -105,11 +99,11 @@
 .chatroom__typing-wrap:last-child {margin-right: 0;}
 
 .chatroom__typing-line {
-  display: inline-block;
-  width: 15px;
-  height: 15px;
-  border-radius: 15px;
   background-color: #4b9cdb;
+  border-radius: 15px;
+  display: inline-block;
+  height: 15px;
+  width: 15px;
 }
 
 .chatroom__typing .chatroom__typing-line:nth-last-child(1) {animation: loadingC .6s .1s linear infinite;}

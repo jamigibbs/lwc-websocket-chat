@@ -1,5 +1,4 @@
 import { LightningElement, api, wire } from 'lwc';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { loadScript } from 'lightning/platformResourceLoader';
 import { getRecord, createRecord } from 'lightning/uiRecordApi';
 import { refreshApex } from '@salesforce/apex';
@@ -24,6 +23,7 @@ export default class WebsocketChat extends LightningElement {
   @api isTyping = false;
 
   _socketIoInitialized = false;
+  _socket;
 
   @wire(getRecord, {recordId: USER_ID, fields: [CHAT_ACTIVE_FIELD]})
   wiredUser({error, data}) {
@@ -56,13 +56,9 @@ export default class WebsocketChat extends LightningElement {
       this.initSocketIo();
     })
     .catch(error => {
-      this.dispatchEvent(
-        new ShowToastEvent({
-         title: 'Error loading socket.io',
-          message: error.message,
-          variant: 'error',
-        }),
-      );
+      // eslint-disable-next-line no-console
+      console.error('loadScript error', error);
+      this.error = 'Error loading socket.io';
     });
   }
 
@@ -71,15 +67,16 @@ export default class WebsocketChat extends LightningElement {
    */
   initSocketIo(){
     // eslint-disable-next-line no-undef
-    const socket = io.connect(WEBSOCKET_SERVER_URL);
+    // eslint-disable-next-line no-undef
+    this._socket = io.connect(WEBSOCKET_SERVER_URL);
     const messageInput = this.template.querySelector('.message-input');
 
-    if (socket !== undefined) {
+    if (this._socket !== undefined) {
 
       /**
        * Not necessary for functionality. It just demonstrates the socket connecting with the server.
        */
-      socket.on('time', (timeString) => {
+      this._socket.on('time', (timeString) => {
         this.timeString = timeString;
       });
 
@@ -88,14 +85,14 @@ export default class WebsocketChat extends LightningElement {
        * 'output' event.
        */
       messageInput.addEventListener('keydown', (event) => {
-        socket.emit('usertyping', { userId: this.userId });
+        this._socket.emit('usertyping', { userId: this.userId });
         // Tab key for when input field is put into focus.
         if (event.keyCode !== 9) {
-          socket.emit('usertyping', { userId: this.userId });
+          this._socket.emit('usertyping', { userId: this.userId });
         }
         if (event.which === 13 && event.shiftKey === false) {
           event.preventDefault();
-          socket.emit('input', {
+          this._socket.emit('input', {
             name: this.userId,
             message: messageInput.value
           })
@@ -107,8 +104,8 @@ export default class WebsocketChat extends LightningElement {
        * not typing at longer. 
        * Used for displaying the typing indicator to the other connected users.
        */
-      messageInput.addEventListener('keyup', this.debounce( (event) => {
-        socket.emit('usernottyping', { userId: this.userId });
+      messageInput.addEventListener('keyup', this.debounce( () => {
+        this._socket.emit('usernottyping', { userId: this.userId });
       }, 1000));
 
       /**
@@ -116,7 +113,7 @@ export default class WebsocketChat extends LightningElement {
        * if it's not the current user.
        * TODO: Handle more than just 2 users.
        */
-      socket.on('istyping', (data) => {
+      this._socket.on('istyping', (data) => {
         if (data.userId !== this.userId) {
           this.isTyping = true;
         }
@@ -127,7 +124,7 @@ export default class WebsocketChat extends LightningElement {
        * if it's not the current user.
        * TODO: Handle more than just 2 users.
        */
-      socket.on('nottyping', (data) => {
+      this._socket.on('nottyping', (data) => {
         if (data.userId !== this.userId) {
           this.isTyping = false;
         }
@@ -137,7 +134,7 @@ export default class WebsocketChat extends LightningElement {
        * After the input text has been submitted, this event routes back to us so that we can create 
        * a new Chat_Message__c record. 
        */
-      socket.on('output', (data) => {
+      this._socket.on('output', (data) => {
         if (data) {
           const fields = {};
           fields[CONTENT_FIELD.fieldApiName] = data.message;
@@ -146,19 +143,14 @@ export default class WebsocketChat extends LightningElement {
 
           createRecord(message)
             .then(() => {
-                socket.emit('transmit');
+              this._socket.emit('transmit');
                 return refreshApex(this.wiredMessages);
             })
             .catch(error => {
               this.error = error;
-              console.log('error', error);
-              this.dispatchEvent(
-                  new ShowToastEvent({
-                      title: 'Error creating message',
-                      message: 'There was an error creating your message',
-                      variant: 'error',
-                  }),
-              );
+              // eslint-disable-next-line no-console
+              console.error('error', error);
+              this.error = 'Error creating message';
             });
         }
       });
@@ -166,7 +158,7 @@ export default class WebsocketChat extends LightningElement {
       /**
        * Setting various messages received back from the socket connection.
        */
-      socket.on('status', (data) => {
+      this._socket.on('status', (data) => {
         if (data.success) {
           messageInput.value = '';
           this.message = data.message;
@@ -182,19 +174,14 @@ export default class WebsocketChat extends LightningElement {
       /**
        * If we're told that a message was sent to the chatroom, refresh the stale messages data.
        */
-      socket.on('chatupdated', () => {
+      this._socket.on('chatupdated', () => {
         return refreshApex(this.wiredMessages);
       });
 
+      this._socket.on('refreshChatUsers', () => {
+        return refreshApex(this.wiredChatUsers);
+      });
     }
-
-  }
-
-  get isMessages(){
-    if (this.wiredMessages.data) {
-      return this.wiredMessages.data.length > 0;
-    }
-    return false;
   }
 
   get isInputDisabled(){
@@ -202,7 +189,7 @@ export default class WebsocketChat extends LightningElement {
   }
 
   get inputPlaceholderText(){
-    return this.isInputDisabled ? 'Enter chat' : 'Type your message and press enter';
+    return this.isInputDisabled ? '' : 'Type your message and press enter';
   }
 
   get displayChatUserList() {
@@ -210,38 +197,34 @@ export default class WebsocketChat extends LightningElement {
   }
 
   handleEnterChat() {
+    // eslint-disable-next-line no-undef
+    //const socket = io.connect(WEBSOCKET_SERVER_URL);
     setUserChatActive()
       .then((res) => {
         this.isChatActive = res.Chat_Active__c;
+        this._socket.emit('userEnteredChat');
         return refreshApex(this.wiredChatUsers);
       })
       .catch(error => {
+        // eslint-disable-next-line no-console
         console.error('error', error)
-        this.dispatchEvent(
-            new ShowToastEvent({
-                title: 'Error updating user record',
-                message: 'There was an error entering the chat',
-                variant: 'error',
-            }),
-        );
+        this.error = 'Error updating user record';
       });
   }
 
-  handleLeaveChat(){
+  handleLeaveChat() {
+    // eslint-disable-next-line no-undef
+    //const socket = io.connect(WEBSOCKET_SERVER_URL);
     setUserChatInactive()
       .then((res) => {
         this.isChatActive = res.Chat_Active__c;
+        this._socket.emit('userLeftChat');
         return refreshApex(this.wiredChatUsers);
       })
       .catch(error => {
+        // eslint-disable-next-line no-console
         console.error('error', error)
-        this.dispatchEvent(
-            new ShowToastEvent({
-                title: 'Error updating user record',
-                message: 'There was an error leaving the chat',
-                variant: 'error',
-            }),
-        );
+        this.error = 'Error updating user record';
       });
   }
 
@@ -265,13 +248,4 @@ export default class WebsocketChat extends LightningElement {
       this[msgType] = '';
     }, 1000)
   }
-
-  /**
-   * Utility function to console.log the messages data.
-   */
-  logMessages(){
-    // eslint-disable-next-line no-console
-    console.log('messages', this.wiredMessages.data);
-  }
-
 }

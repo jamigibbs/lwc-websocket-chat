@@ -5,12 +5,8 @@
         <members>Chat_Message__c</members>
     </types>
     <types>
-        <name>Labels</name>
-        <members>Chat_Message__c</members>
-    </types>
-    <types>
         <name>CustomLabels</name>
-        <members>websocket_server_url</members>
+        <members>*</members>
     </types>
     <types>
         <name>ApexClass</name>

@@ -29,10 +29,6 @@
 
           <div class="chatroom__messages">
 
-            <template if:false={isMessages}>
-              <div class="chatroom__no-messages slds-text-heading_small slds-text-align_center slds-p-top_large">No message yet for today</div>
-            </template>
-
             <template if:true={isTyping}>
               <div class="chatroom__typing-wrap">
                 <div class="chatroom__typing">
@@ -79,20 +75,17 @@
       </div>
     </div>
 
+    <div class="slds-grid slds-wrap slds-m-top_medium">
+      <div class="slds-col slds-size_1-of-1">
+          <p class="slds-text-body_small slds-float_right">Connected to the websocket server {timeString}</p>
+      </div>
+    </div>
+
     <template if:true={isChatActive}>
       <div class="slds-m-top_medium">
         <lightning-button label="Leave Chat" title="Leave Chat" onclick={handleLeaveChat}></lightning-button>
       </div>
     </template>
-
-    <div class="slds-grid slds-wrap">
-      <div class="slds-col slds-size_1-of-1">
-          <p class="slds-text-body_small slds-float_right">Connected to the websocket server {timeString}</p>
-      </div>
-      <div class="slds-col slds-size_1-of-1">
-          <lightning-button variant="base" label="log messages" title="log messages" onclick={logMessages} class="slds-m-left_x-small slds-float_right"></lightning-button>
-      </div>
-    </div>
 
     <template if:true={message}>
       <p class="slds-text-color_success">{message}</p>
