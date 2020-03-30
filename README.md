@@ -1,58 +1,54 @@
-# Salesforce App
+# LWC Websocket Chat
 
-This guide helps Salesforce developers who are new to Visual Studio Code go from zero to a deployed app using Salesforce Extensions for VS Code and Salesforce CLI.
+This repo contains an example of a Salesforce Lightning Web Component Chat using websockets. This is a simple experimental project that was built out of my own curiosity and is not meant to be used in production. Please visit the [related blog post](http://blog.jamigibbs.com) for more information.
 
-## Part 1: Choosing a Development Model
+# Getting Started
 
-There are two types of developer processes or models supported in Salesforce Extensions for VS Code and Salesforce CLI. These models are explained below. Each model offers pros and cons and is fully supported.
+If you haven't done so already, make sure you've setup SFDX and enabled a Dev Hub: https://trailhead.salesforce.com/en/content/learn/modules/sfdx_app_dev/sfdx_app_dev_setup_dx
 
-### Package Development Model
+## 1. Create a Scratch Org & Push Metadata
 
-The package development model allows you to create self-contained applications or libraries that are deployed to your org as a single package. These packages are typically developed against source-tracked orgs called scratch orgs. This development model is geared toward a more modern type of software development process that uses org source tracking, source control, and continuous integration and deployment.
+To do this, you can either run the provided script in terminal:
 
-If you are starting a new project, we recommend that you consider the package development model. To start developing with this model in Visual Studio Code, see [Package Development Model with VS Code](https://forcedotcom.github.io/salesforcedx-vscode/articles/user-guide/package-development-model). For details about the model, see the [Package Development Model](https://trailhead.salesforce.com/en/content/learn/modules/sfdx_dev_model) Trailhead module.
+`scripts/create-scratch.sh`
 
-If you are developing against scratch orgs, use the command `SFDX: Create Project` (VS Code) or `sfdx force:project:create` (Salesforce CLI)  to create your project. If you used another command, you might want to start over with that command.
+Or, run each of these sfdx commands individually:
 
-When working with source-tracked orgs, use the commands `SFDX: Push Source to Org` (VS Code) or `sfdx force:source:push` (Salesforce CLI) and `SFDX: Pull Source from Org` (VS Code) or `sfdx force:source:pull` (Salesforce CLI). Do not use the `Retrieve` and `Deploy` commands with scratch orgs.
+```
+sfdx force:org:create -s -a name_of_scratch -f config/project-scratch-def.json
 
-### Org Development Model
+sfdx force:source:push -u name_of_scratch
 
-The org development model allows you to connect directly to a non-source-tracked org (sandbox, Developer Edition (DE) org, Trailhead Playground, or even a production org) to retrieve and deploy code directly. This model is similar to the type of development you have done in the past using tools such as Force.com IDE or MavensMate.
+sfdx force:data:tree:import -u name_of_scratch -p data/org-data-plan.json
 
-To start developing with this model in Visual Studio Code, see [Org Development Model with VS Code](https://forcedotcom.github.io/salesforcedx-vscode/articles/user-guide/org-development-model). For details about the model, see the [Org Development Model](https://trailhead.salesforce.com/content/learn/modules/org-development-model) Trailhead module.
+sfdx force:user:create -u name_of_scratch --setalias chat-user
 
-If you are developing against non-source-tracked orgs, use the command `SFDX: Create Project with Manifest` (VS Code) or `sfdx force:project:create --manifest` (Salesforce CLI) to create your project. If you used another command, you might want to start over with this command to create a Salesforce DX project.
-
-When working with non-source-tracked orgs, use the commands `SFDX: Deploy Source to Org` (VS Code) or `sfdx force:source:deploy` (Salesforce CLI) and `SFDX: Retrieve Source from Org` (VS Code) or `sfdx force:source:retrieve` (Salesforce CLI). The `Push` and `Pull` commands work only on orgs with source tracking (scratch orgs).
-
-## The `sfdx-project.json` File
-
-The `sfdx-project.json` file contains useful configuration information for your project. See [Salesforce DX Project Configuration](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_config.htm) in the _Salesforce DX Developer Guide_ for details about this file.
-
-The most important parts of this file for getting started are the `sfdcLoginUrl` and `packageDirectories` properties.
-
-The `sfdcLoginUrl` specifies the default login URL to use when authorizing an org.
-
-The `packageDirectories` filepath tells VS Code and Salesforce CLI where the metadata files for your project are stored. You need at least one package directory set in your file. The default setting is shown below. If you set the value of the `packageDirectories` property called `path` to `force-app`, by default your metadata goes in the `force-app` directory. If you want to change that directory to something like `src`, simply change the `path` value and make sure the directory you’re pointing to exists.
-
-```json
-"packageDirectories" : [
-    {
-      "path": "force-app",
-      "default": true
-    }
-]
+sfdx force:org:open -u name_of_scratch
 ```
 
-## Part 2: Working with Source
+## 2. Deploy your node server to Heroku
 
-For details about developing against scratch orgs, see the [Package Development Model](https://trailhead.salesforce.com/en/content/learn/modules/sfdx_dev_model) module on Trailhead or [Package Development Model with VS Code](https://forcedotcom.github.io/salesforcedx-vscode/articles/user-guide/package-development-model).
+Create a node websocket server by clicking the "Deploy to Heroku" button on the [sf-chat-websocket-server](https://github.com/jamigibbs/sf-chat-websocket-server) repo.
 
-For details about developing against orgs that don’t have source tracking, see the [Org Development Model](https://trailhead.salesforce.com/content/learn/modules/org-development-model) module on Trailhead or [Org Development Model with VS Code](https://forcedotcom.github.io/salesforcedx-vscode/articles/user-guide/org-development-model).
+## 3. Update the websocket server url
 
-## Part 3: Deploying to Production
+Add your web socket url that was created by Heroku to:
+  - `labels/CustomLabels.labels-meta.xml`
+  - `cspTrustedSites/HTTP_Websocket_Server.cspTrustedSite-meta.xml`
+  - `WSS_Websocket_Server.cspTrustedSite-meta.xml`
 
-Don’t deploy your code to production directly from Visual Studio Code. The deploy and retrieve commands do not support transactional operations, which means that a deployment can fail in a partial state. Also, the deploy and retrieve commands don’t run the tests needed for production deployments. The push and pull commands are disabled for orgs that don’t have source tracking, including production orgs.
+Deploy those changes to the scratch org:
 
-Deploy your changes to production using [packaging](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_dev2gp.htm) or by [converting your source](https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_reference.meta/sfdx_cli_reference/cli_reference_force_source.htm#cli_reference_convert) into metadata format and using the [metadata deploy command](https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_reference.meta/sfdx_cli_reference/cli_reference_force_mdapi.htm#cli_reference_deploy).
+`sfdx force:source:deploy -x manifest/websocket_chat/package.xml`
+
+## 2. Add the LWC Websocket Chat component to a page 
+
+The last step is to add the component to a page from the App Builder or in a community from the Experience Builder.
+
+# Additional Exercises
+
+Interested in seeing what else you can do with this project? Here are a few ideas:
+
+- Handle multiple chat rooms.
+- Add chat notifications to the user's notification bell.
+- Display a person's name to other users when they're typing.
