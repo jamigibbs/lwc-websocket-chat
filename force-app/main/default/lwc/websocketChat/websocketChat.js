@@ -2,12 +2,12 @@ import { LightningElement, api, wire } from 'lwc';
 import { loadScript } from 'lightning/platformResourceLoader';
 import { getRecord, createRecord } from 'lightning/uiRecordApi';
 import { refreshApex } from '@salesforce/apex';
+import SOCKET_IO_JS from '@salesforce/resourceUrl/socketiojs';
+import USER_ID from '@salesforce/user/Id';
 import WEBSOCKET_SERVER_URL from '@salesforce/label/c.websocket_server_url';
 import MESSAGE_OBJECT from '@salesforce/schema/Chat_Message__c';
 import CONTENT_FIELD from '@salesforce/schema/Chat_Message__c.Content__c';
 import USER_FIELD from '@salesforce/schema/Chat_Message__c.User__c';
-import SOCKET_IO_JS from '@salesforce/resourceUrl/socketiojs';
-import USER_ID from '@salesforce/user/Id';
 import CHAT_ACTIVE_FIELD from '@salesforce/schema/User.Chat_Active__c';
 import getTodayMessages from '@salesforce/apex/ChatController.getTodayMessages';
 import getActiveChatUsers from '@salesforce/apex/ChatController.getActiveChatUsers';
@@ -74,15 +74,17 @@ export default class WebsocketChat extends LightningElement {
     if (this._socket !== undefined) {
 
       /**
-       * Not necessary for functionality. It just demonstrates the socket connecting with the server.
+       * Not necessary for functionality. We are just demonstrates the socket 
+       * connection with the server by display a counting timestring on the frontend.
        */
       this._socket.on('time', (timeString) => {
         this.timeString = timeString;
       });
 
       /**
-       * After the user hits enter, the input field text is sent to the wss server and back to us in the
-       * 'output' event.
+       * Listening for activity on the message input field. 
+       * Handling the socket event emit for when the user is typing 
+       * and if a chat message was submitted (enter key is pressed).
        */
       messageInput.addEventListener('keydown', (event) => {
         this._socket.emit('usertyping', { userId: this.userId });
@@ -100,18 +102,18 @@ export default class WebsocketChat extends LightningElement {
       });
 
       /**
-       * When the user has released typing, debounce relased and after 1 second mark the user as
-       * not typing at longer. 
-       * Used for displaying the typing indicator to the other connected users.
+       * When the user has released typing, debounce the release.
+       * After 1 second, emit that the user as not typing at longer. 
+       * Useful for displaying the typing indicator to the other connected users.
        */
       messageInput.addEventListener('keyup', this.debounce( () => {
         this._socket.emit('usernottyping', { userId: this.userId });
       }, 1000));
 
       /**
-       * If we received an event indicating that a user is typing, display the typing indicator
-       * if it's not the current user.
-       * TODO: Handle more than just 2 users.
+       * If we received an event indicating that a user is typing, display 
+       * the typing indicator if it's not the current user.
+       * TODO: Handle specific users typing.
        */
       this._socket.on('istyping', (data) => {
         if (data.userId !== this.userId) {
@@ -120,9 +122,9 @@ export default class WebsocketChat extends LightningElement {
       });
 
       /**
-       * If we received an event indicating that a user has stopped typing, stop displaying the typing indicator
-       * if it's not the current user.
-       * TODO: Handle more than just 2 users.
+       * If we received an event indicating that a user has stopped typing,
+       * stop displaying the typing indicator if it's not the current user.
+       * TODO: Handle specific users typing.
        */
       this._socket.on('nottyping', (data) => {
         if (data.userId !== this.userId) {
@@ -131,8 +133,8 @@ export default class WebsocketChat extends LightningElement {
       });
 
       /**
-       * After the input text has been submitted, this event routes back to us so that we can create 
-       * a new Chat_Message__c record. 
+       * After the input text has been submitted, this event routes
+       * back to us so that we can create a new Chat_Message__c record. 
        */
       this._socket.on('output', (data) => {
         if (data) {
@@ -144,10 +146,9 @@ export default class WebsocketChat extends LightningElement {
           createRecord(message)
             .then(() => {
               this._socket.emit('transmit');
-                return refreshApex(this.wiredMessages);
+              return refreshApex(this.wiredMessages);
             })
             .catch(error => {
-              this.error = error;
               // eslint-disable-next-line no-console
               console.error('error', error);
               this.error = 'Error creating message';
@@ -172,7 +173,8 @@ export default class WebsocketChat extends LightningElement {
       })
 
       /**
-       * If we're told that a message was sent to the chatroom, refresh the stale messages data.
+       * If we're told that a message was sent to the chatroom,
+       * refresh the stale messages data.
        */
       this._socket.on('chatupdated', () => {
         return refreshApex(this.wiredMessages);
@@ -184,21 +186,7 @@ export default class WebsocketChat extends LightningElement {
     }
   }
 
-  get isInputDisabled(){
-    return this.isChatActive ? false : true;
-  }
-
-  get inputPlaceholderText(){
-    return this.isInputDisabled ? '' : 'Type your message and press enter';
-  }
-
-  get displayChatUserList() {
-    return this.isChatActive && this.wiredChatUsers;
-  }
-
   handleEnterChat() {
-    // eslint-disable-next-line no-undef
-    //const socket = io.connect(WEBSOCKET_SERVER_URL);
     setUserChatActive()
       .then((res) => {
         this.isChatActive = res.Chat_Active__c;
@@ -207,7 +195,7 @@ export default class WebsocketChat extends LightningElement {
       })
       .catch(error => {
         // eslint-disable-next-line no-console
-        console.error('error', error)
+        console.error('error', error);
         this.error = 'Error updating user record';
       });
   }
@@ -223,11 +211,28 @@ export default class WebsocketChat extends LightningElement {
       })
       .catch(error => {
         // eslint-disable-next-line no-console
-        console.error('error', error)
+        console.error('error', error);
         this.error = 'Error updating user record';
       });
   }
 
+  get isInputDisabled(){
+    return this.isChatActive ? false : true;
+  }
+
+  get inputPlaceholderText(){
+    return this.isInputDisabled ? '' : 'Type your message and press enter';
+  }
+
+  get displayChatUserList() {
+    return this.isChatActive && this.wiredChatUsers;
+  }
+
+  /**
+   * Utility debounce function.
+   * @param {Function} callback - The function to debounce.
+   * @param {Number} wait - The number of milliseconds to debounce.
+   */
   debounce(callback, wait){
     let timeout;
     return (...args) => {
