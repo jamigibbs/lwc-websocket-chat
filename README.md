@@ -1,6 +1,6 @@
 # LWC Websocket Chat
 
-This repo contains an example of a Salesforce Lightning Web Component Chat using websockets. This is a simple experimental project that was built out of my own curiosity and is not meant to be used in production. Please visit the [related blog post](http://blog.jamigibbs.com) for more information.
+This repo contains an example of a Salesforce Lightning Web Component Chat using websockets. This is a simple experimental project that was built out of my own curiosity and is not meant to be used in production. Please visit the [related blog post](https://blog.jamigibbs.com/websockets-in-salesforce-with-lightning-web-components/) for more information.
 
 # Getting Started
 
