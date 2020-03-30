@@ -94,10 +94,26 @@ export default class WebsocketChat extends LightningElement {
         }
         if (event.which === 13 && event.shiftKey === false) {
           event.preventDefault();
-          this._socket.emit('input', {
-            name: this.userId,
-            message: messageInput.value
-          })
+
+          const fields = {};
+          fields[CONTENT_FIELD.fieldApiName] = messageInput.value;
+          fields[USER_FIELD.fieldApiName] = this.userId;
+          const message = { apiName: MESSAGE_OBJECT.objectApiName, fields };
+
+          createRecord(message)
+            .then(() => {
+              // Reset the form input field.
+              messageInput.value = '';
+              // Refresh the message data for other active users.
+              this._socket.emit('transmit');
+              // Refresh the message data for the current user.
+              return refreshApex(this.wiredMessages);
+            })
+            .catch(error => {
+              // eslint-disable-next-line no-console
+              console.error('error', error);
+              this.error = 'Error creating message';
+            });
         }
       });
 
@@ -133,27 +149,12 @@ export default class WebsocketChat extends LightningElement {
       });
 
       /**
-       * After the input text has been submitted, this event routes
-       * back to us so that we can create a new Chat_Message__c record. 
+       * Utility socket event to display the chat data for demo
+       * purposes only.
        */
       this._socket.on('output', (data) => {
-        if (data) {
-          const fields = {};
-          fields[CONTENT_FIELD.fieldApiName] = data.message;
-          fields[USER_FIELD.fieldApiName] = this.userId;
-          const message = { apiName: MESSAGE_OBJECT.objectApiName, fields };
-
-          createRecord(message)
-            .then(() => {
-              this._socket.emit('transmit');
-              return refreshApex(this.wiredMessages);
-            })
-            .catch(error => {
-              // eslint-disable-next-line no-console
-              console.error('error', error);
-              this.error = 'Error creating message';
-            });
-        }
+        // eslint-disable-next-line no-console
+        console.log('on output', data);
       });
 
       /**
